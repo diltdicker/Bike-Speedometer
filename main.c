@@ -10,6 +10,7 @@
 #define F_CPU 1000000       // 1 MHz i think
 #include <avr/io.h>
 #include <util/delay.h>
+#include <stdlib.h>
 
 void init_AVR_pins(void) {
     DDRB = 0xff;
@@ -82,10 +83,11 @@ uint16_t read_analog(void) {
 void display_analog_binary(uint16_t tmpVal) {
 	//clear_LCD();
 	reset_cursor_pos();
+    uint16_t tmp = tmpVal / 0b00000101;
     int i = 9;
     while (i >= 0) {
         // write character
-		if (1 == ((tmpVal >> i) & 0x01)) {
+		if (1 == ((tmp >> i) & 0x01)) {
 			// if bit is 1
 			write_char_to_LCD('1');
 		} else {
@@ -94,6 +96,40 @@ void display_analog_binary(uint16_t tmpVal) {
 		}
         i--;
     }
+}
+
+void display_analog_decimal(uint16_t tmpVal) {
+    reset_cursor_pos();
+    //tmpVal = tmpVal - 0b00110111;
+    int d = 5;
+    tmpVal *= 10;
+    uint16_t tmp = tmpVal / 0b00000101;
+    // plus 55
+    //tmp = tmp - (0b00110111);
+    char temperature[3];
+    itoa(tmp, temperature, 10);
+    if (tmp < 100) {
+        /*temperature[3] = temperature[2];
+        temperature[2] = temperature[1];
+        temperature[1] = temperature[0];
+        temperature[0] = '0';*/
+        //temperature[3] = temperature[2];
+        temperature[2] = temperature[1];
+        temperature[1] = temperature[0];
+        temperature[0] = '0';
+    }
+    int i = 0;
+    while (i < 3) {
+        // write character
+        if (i == 2) {
+            write_char_to_LCD('.');
+        }
+		write_char_to_LCD(temperature[i]);
+        i++;
+    }
+    write_char_to_LCD(' ');
+    write_char_to_LCD(0b11011111);
+    write_char_to_LCD('C');
 }
 
 void write_temperature_label(void) {
@@ -115,8 +151,10 @@ void write_temperature_label(void) {
     write_char_to_LCD('r');
     write_char_to_LCD('e');
     write_char_to_LCD(' ');
-    write_char_to_LCD('C');
+    write_char_to_LCD('(');
     write_char_to_LCD(0b11011111);
+    write_char_to_LCD('C');
+    write_char_to_LCD(')');
 }
 
 int main(void){
@@ -136,7 +174,8 @@ int main(void){
         _delay_ms(500);
         //double_toggle_enable();
 		ADCval = read_analog();
-		display_analog_binary(ADCval);
+		display_analog_decimal(ADCval);
+        //display_analog_binary(ADCval);
     }
     return 0;
 }
