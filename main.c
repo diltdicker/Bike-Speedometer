@@ -10,6 +10,7 @@
 #define CTRL_PIN PIND
 #define MODE_BUTTON PD6
 #define RESET_BUTTON PD7
+#define REED_PIN PD2    // REED SENSOR
 #define F_CPU 1000000       // 1 MHz i think
 #include <avr/io.h>
 #include <util/delay.h>
@@ -18,6 +19,9 @@
 void init_AVR_pins(void) {
     DDRB = 0xff;
     DDRD = 0x03;
+    CTRL_PORT |= (1 << MODE_BUTTON);        // Pull up resistor
+    CTRL_PORT |= (1 << RESET_BUTTON);
+    CTRL_PORT |= (1 << REED_PIN);
 }
 
 void init_LCD(void) {
@@ -222,12 +226,30 @@ int main(void){
     while (1) {
         //clear_LCD();
         if (bit_is_clear(CTRL_PIN, MODE_BUTTON)) {
-            if (lcdMode == 0x00) {
-
-            } else if (lcdMode == 0x01) {
-
-            } else if (lcdMode == 0x02) {
-                
+            _delay_ms(5);
+            if (bit_is_clear(CTRL_PIN, MODE_BUTTON)) {
+                if (lcdMode == 0x00) {
+                    lcdMode = 0x01;
+                    write_milage_label();
+                } else if (lcdMode == 0x01) {
+                    lcdMode = 0x02;
+                    write_timer_label();
+                } else if (lcdMode == 0x02) {
+                    lcdMode = 0x00;
+                    write_temperature_label();
+                }
+            }
+        }
+        if (bit_is_clear(CTRL_PIN, RESET_BUTTON)) {
+            _delay_ms(5);
+            if (bit_is_clear(CTRL_PIN, RESET_BUTTON)) {
+                if (lcdMode == 0x00) {
+                    // RESET TEMPERATURE
+                } else if (lcdMode == 0x01) {
+                    // RESET MILAGE
+                } else if (lcdMode == 0x02) {
+                    // RESET TIMER
+                }
             }
         }
         reset_cursor_pos();
