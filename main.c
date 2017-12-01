@@ -7,6 +7,9 @@
 #define RS PD0
 #define LCD_PORT PORTB
 #define CTRL_PORT PORTD
+#define CTRL_PIN PIND
+#define MODE_BUTTON PD6
+#define RESET_BUTTON PD7
 #define F_CPU 1000000       // 1 MHz i think
 #include <avr/io.h>
 #include <util/delay.h>
@@ -157,9 +160,60 @@ void write_temperature_label(void) {
     write_char_to_LCD(')');
 }
 
+void write_milage_label(void) {
+    clear_LCD();
+    // move Cursor to second line
+    CTRL_PORT &= ~(1 << RS);
+    LCD_PORT = 0b11000000;
+    double_toggle_enable();
+    //
+    write_char_to_LCD('M');
+    write_char_to_LCD('i');
+    write_char_to_LCD('l');
+    write_char_to_LCD('a');
+    write_char_to_LCD('g');
+    write_char_to_LCD('e');
+    write_char_to_LCD(' ');
+    write_char_to_LCD(' ');
+    write_char_to_LCD(' ');
+    write_char_to_LCD(' ');
+    write_char_to_LCD(' ');
+    write_char_to_LCD(' ');
+    write_char_to_LCD(' ');
+    write_char_to_LCD(' ');
+    write_char_to_LCD(' ');
+    write_char_to_LCD(' ');
+}
+
+void write_timer_label(void) {
+    clear_LCD();
+    // move Cursor to second line
+    CTRL_PORT &= ~(1 << RS);
+    LCD_PORT = 0b11000000;
+    double_toggle_enable();
+    //
+    write_char_to_LCD('T');
+    write_char_to_LCD('i');
+    write_char_to_LCD('m');
+    write_char_to_LCD('e');
+    write_char_to_LCD('r');
+    write_char_to_LCD(' ');
+    write_char_to_LCD('(');
+    write_char_to_LCD('H');
+    write_char_to_LCD('H');
+    write_char_to_LCD(':');
+    write_char_to_LCD('M');
+    write_char_to_LCD('M');
+    write_char_to_LCD(':');
+    write_char_to_LCD('S');
+    write_char_to_LCD('S');
+    write_char_to_LCD(')');
+}
+
 int main(void){
     //_delay_ms(5000);
 	uint16_t ADCval = 0xffff;
+    uint8_t lcdMode = 0x00; // 0x00 == temperature, 0x01 == Milage, 0x02 == timer
     init_AVR_pins();
     init_LCD();
 	init_analog();
@@ -167,6 +221,15 @@ int main(void){
     //reset_cursor_pos();
     while (1) {
         //clear_LCD();
+        if (bit_is_clear(CTRL_PIN, MODE_BUTTON)) {
+            if (lcdMode == 0x00) {
+
+            } else if (lcdMode == 0x01) {
+
+            } else if (lcdMode == 0x02) {
+                
+            }
+        }
         reset_cursor_pos();
         //write_char_to_LCD('A');
         //write_char_to_LCD('B');
