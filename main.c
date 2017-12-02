@@ -72,6 +72,8 @@ void init_analog(void)
     ADCSRA |= (1 << ADSC);
 }
 
+// for use in writing to LCD
+// a togle of the enable bit is needed to input new data
 void double_toggle_enable(void) {
     CTRL_PORT |= (1 << EN);
     _delay_ms(5);
@@ -89,6 +91,7 @@ void write_char_to_LCD(char letter) {
     CTRL_PORT &= ~(1 << RS);
 }
 
+// same as a carraige rerturn
 void reset_cursor_pos(void) {
     LCD_PORT = 0b00000010;
     CTRL_PORT &= ~(1 << RS);
@@ -110,6 +113,7 @@ uint16_t read_analog(void) {
 }
 
 void display_time (uint64_t time) {
+    // effecient time computation for each time type
     time = time / 60;
     uint8_t sec = time % 60;
     time = time / 60;
@@ -136,7 +140,7 @@ void display_time (uint64_t time) {
         write_char_to_LCD('0');
         k = k - 1;
     }
-    while (i < k) {
+    while (i < k) { // will only write pertanent characters to LCD
         write_char_to_LCD(hours[i]);
         i = i + 1;
     }
@@ -153,7 +157,7 @@ void display_time (uint64_t time) {
         write_char_to_LCD('0');
         k = k - 1;
     }
-    while (i < k) {
+    while (i < k) { // will only write pertanent characters to LCD
         write_char_to_LCD(minutes[i]);
         i = i + 1;
     }
@@ -170,29 +174,13 @@ void display_time (uint64_t time) {
         write_char_to_LCD('0');
         k = k - 1;
     }
-    while (i < k) {
+    while (i < k) { // will only write pertanent characters to LCD
         write_char_to_LCD(seconds[i]);
         i = i + 1;
     }
-
-    /*char time_10[16];
-    reset_cursor_pos();
-    itoa(time, time_10, 10);
-    uint64_t tmp = 1;
-    uint8_t i = 0;
-    uint8_t k = 0;
-    while (time > tmp ) {
-        tmp = tmp * 10;
-        k = k + 1;
-    }
-    while (i < k) {
-        // write character
-		write_char_to_LCD(time_10[i]);
-        i++;
-    }*/
-
 }
 
+// for debugging
 void display_analog_binary(uint16_t tmpVal) {
 	//clear_LCD();
 	reset_cursor_pos();
@@ -229,7 +217,7 @@ void display_analog_decimal(uint16_t tmpVal) {
         k = k + 1;
     }
 
-    while (i < k) {
+    while (i < k) { // will only write pertanent characters to LCD
         write_char_to_LCD(temp[i]);
         i = i + 1;
     }
@@ -258,6 +246,7 @@ display_feet(uint64_t feet) {
     }
 }
 
+// for debugging
 void display_speed_binary(uint16_t spd_2) {
     reset_cursor_pos();
     int i = 16;
@@ -289,7 +278,7 @@ void display_speed(uint16_t spd) {
         tmp = tmp * 10;
         k = k + 1;
     }
-    while (i < k) {
+    while (i < k) { // will only write pertanent characters to LCD
         // write character
 		write_char_to_LCD(speed_10[i]);
         i++;
