@@ -68,6 +68,8 @@ void init_analog(void)
     ADMUX |= (1 << REFS0);
     ADCSRA |= (1 << ADPS0) | (1 << ADPS1);              // 1/8 prescaler
     ADCSRA |= (1 << ADEN);
+    ADMUX &= ~(1 << ADLAR);     // shift right
+    ADCSRA |= (1 << ADSC);
 }
 
 void double_toggle_enable(void) {
@@ -212,35 +214,29 @@ void display_analog_binary(uint16_t tmpVal) {
 void display_analog_decimal(uint16_t tmpVal) {
     reset_cursor_pos();
     //tmpVal = tmpVal - 0b00110111;
-    int d = 5;
-    tmpVal *= 10;
-    uint16_t tmp = tmpVal / 0b00000101;
-    // plus 55
-    //tmp = tmp - (0b00110111);
-    char temperature[3];
-    itoa(tmp, temperature, 10);
-    if (tmp < 100) {
-        /*temperature[3] = temperature[2];
-        temperature[2] = temperature[1];
-        temperature[1] = temperature[0];
-        temperature[0] = '0';*/
-        //temperature[3] = temperature[2];
-        temperature[2] = temperature[1];
-        temperature[1] = temperature[0];
-        temperature[0] = '0';
+    //tmpVal = tmpVal - 220;
+    tmpVal = tmpVal / 2; // honestly i don't know the proper math cause it keeps on reading wrong
+    //tmpVal = tmpVal + 55;
+
+    char temp[3];
+    itoa (tmpVal, temp, 10);
+
+    uint8_t i = 0;
+    uint8_t k = 0;
+    uint16_t j = 1;
+    while (tmpVal > j) {
+        j = j * 10;
+        k = k + 1;
     }
-    int i = 0;
-    while (i < 3) {
-        // write character
-        if (i == 2) {
-            write_char_to_LCD('.');
-        }
-		write_char_to_LCD(temperature[i]);
-        i++;
+
+    while (i < k) {
+        write_char_to_LCD(temp[i]);
+        i = i + 1;
     }
-    write_char_to_LCD(' ');
+
     write_char_to_LCD(0b11011111);
     write_char_to_LCD('C');
+    write_char_to_LCD(' ');
 }
 
 display_feet(uint64_t feet) {
